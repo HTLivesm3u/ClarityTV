@@ -572,6 +572,11 @@ body {
   color: var(--foreground-muted);
 }
 
+#lyrics-container p.active-line { color: var(--primary); font-weight: 600; }
+#lyrics-container { max-height: 40vh; overflow-y: auto; padding: 10px; color: var(--foreground-muted); text-align:center; }
+
+
+
 .progress-container {
   width: 100%;
   margin-bottom: 1.5rem;
