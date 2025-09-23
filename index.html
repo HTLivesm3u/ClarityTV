@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MusicStream - Your Mobile Music App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="description" content="Beautiful mobile music streaming app with dark theme and smooth animations" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="icon" type="image/webp" href="https://music45beta.vercel.app/music/music45.webp">
+  <!-- Lucide icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.462.0/lucide.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <div class="header">
+      <h1 class="greeting" id="greeting">Good morning</h1>
+      <div class="header-icons">
+        <button class="icon-button"><i data-lucide="bell"></i></button>
+        <button class="icon-button"><i data-lucide="clock"></i></button>
+        <button class="icon-button"><i data-lucide="settings"></i></button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="main">
+
+      <!-- 🏠 HOME TAB -->
+      <div class="tab-view" id="tab-home">
+        
+        <!-- 🎵 Album Detail View -->
+        <div class="album-view" id="album-view" style="display:none;">
+          <div class="album-topbar">
+            <button id="album-back" class="album-back">
+              <i data-lucide="arrow-left"></i>
+            </button>
+          </div>
+          <div class="album-header">
+            <img id="album-cover" src="" alt="Album Cover">
+            <h2 id="album-title">Album Title</h2>
+            <p id="album-artist">Album Artist</p>
+            <button id="album-play" class="play-button"><i data-lucide="play"></i></button>
+          </div>
+          <div class="album-tracks" id="album-tracks"></div>
+        </div>
+
+        <!-- Albums -->
+        <div class="section">
+          <h2 class="section-title">Albums</h2>
+          <div class="horizontal-scroll" id="albums"></div>
+        </div>
+
+        <!-- Recently Played -->
+        <div class="section">
+          <h2 class="section-title">Recently played</h2>
+          <div class="horizontal-scroll" id="recently"></div>
+        </div>
+
+       <!-- New Releases -->
+    <div class="section">
+      <h2 class="section-title">New releases for you</h2>
+      <div class="horizontal-scroll" id="new-releases">
+        <div class="music-card" data-q="90s Hits hindi">
+          <img src="https://picsum.photos/seed/eastside/300/300" alt="EastSide Story">
+          <span>EastSide Story</span>
+        </div>
+        <div class="music-card" data-q="Good Vibes">
+          <img src="https://picsum.photos/seed/goodvibes/300/300" alt="Good Vibes">
+          <span>Good Vibes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <!-- 🔎 SEARCH TAB -->
+      <div class="tab-view" id="tab-search" style="display:none;">
+        <div class="search-container">
+          <input type="text" id="search-input" placeholder="Search songs, artists, albums..." />
+          <button id="search-btn"><i data-lucide="search"></i></button>
+        </div>
+        <div class="search-results" id="search-results"></div>
+      </div>
+
+      <!-- 📚 LIBRARY TAB -->
+      <div class="tab-view" id="tab-library" style="display:none;">
+        <h2 class="section-title">Your Library</h2>
+        <p style="color:var(--foreground-muted);padding:12px;">No saved songs yet.</p>
+      </div>
+    </div>
+
+    <!-- Floating Player -->
+<div class="music-player" id="music-player">
+  <div class="player-content">
+    <div class="track-info" id="open-banner">
+      <div class="track-image">
+        <img id="current-track-image" src="https://music45beta.vercel.app/music/music45.webp" alt="Cover">
+      </div>
+      <div class="track-details">
+        <h4 id="current-track-title">No song</h4>
+        <p id="current-track-artist">—</p>
+      </div>
+    </div>
+  </div>
+  <div class="player-controls">
+    <button class="control-button" id="btn-prev"><i data-lucide="skip-back"></i></button>
+    <button class="play-button" id="btn-play"><i data-lucide="play" id="play-icon"></i></button>
+    <button class="control-button" id="btn-next"><i data-lucide="skip-forward"></i></button>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-track" id="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Music Banner (Full-Screen Player) -->
+<div id="music-banner" class="music-banner" style="display:none;">
+  <div class="player-container">
+    <button id="close-banner-btn" class="close-btn"><i data-lucide="chevron-down"></i></button>
+    <div class="album-cover">
+      <img id="banner-cover-image" src="https://music45beta.vercel.app/music/music45.webp" alt="Album Cover">
+    </div>
+    <div class="song-info">
+      <h2 id="banner-song-title">No song</h2>
+      <p id="banner-artist-name">—</p>
+    </div>
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-track" id="banner-progress-track">
+          <div class="progress-fill" id="banner-progress-fill"></div>
+        </div>
+      </div>
+      <div class="time-stamps">
+        <span id="current-time">00:00</span>
+        <span id="duration">00:00</span>
+      </div>
+    </div>
+    <div class="main-controls">
+      <button id="shuffle-btn" class="control-button"><i data-lucide="shuffle"></i></button>
+      <button id="banner-prev" class="control-button"><i data-lucide="skip-back"></i></button>
+      <button id="banner-play-pause" class="play-button"><i data-lucide="play" id="banner-play-icon"></i></button>
+      <button id="banner-next" class="control-button"><i data-lucide="skip-forward"></i></button>
+      <button id="repeat-btn" class="control-button"><i data-lucide="repeat"></i></button>
+      <div id="shuffle-popup" class="popup">Shuffle: <span id="shuffle-status">Off</span></div>
+      <div id="repeat-popup" class="popup">Repeat: <span id="repeat-status">Off</span></div>
+    </div>
+  </div>
+</div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <button class="nav-item active" data-tab="home"><i data-lucide="home"></i><span>Home</span></button>
+      <button class="nav-item" data-tab="search"><i data-lucide="search"></i><span>Search</span></button>
+      <button class="nav-item" data-tab="library"><i data-lucide="library"></i><span>Your Library</span></button>
+    </div>
+  </div>
+
+
+  <!-- Settings Modal -->
+<!-- ⚙️ SETTINGS BOTTOM SHEET -->
+<div id="settings-sheet" class="settings-sheet">
+  <div class="sheet-header">
+    <div class="drag-line"></div>
+    <h2>Settings</h2>
+    <button id="close-settings"><i data-lucide="x"></i></button>
+  </div>
+  <div class="sheet-body">
+    <h3>Playback Quality</h3>
+    <div class="quality-options">
+      <button class="quality-btn" data-quality="low">Low (96 kbps)</button>
+      <button class="quality-btn" data-quality="medium">Medium (160 kbps)</button>
+      <button class="quality-btn" data-quality="high">High (320 kbps)</button>
+      <button class="quality-btn" data-quality="auto">Auto (Best)</button>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Hidden audio element -->
+  <audio id="audio"></audio>
+
+   <script>
+  // Bottom nav tab switching
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', e => {
+      // remove active from all
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+
+      // hide all tabs
+      document.querySelectorAll('.tab-view').forEach(tab => tab.style.display = 'none');
+
+      // show selected
+      const tab = e.currentTarget.getAttribute("data-tab");
+      const tabId = "tab-" + tab;
+      const tabEl = document.getElementById(tabId);
+      if (tabEl) tabEl.style.display = "block";
+
+      // push history state so back/forward works (for search/library/home)
+      if (window.history && window.history.pushState) {
+      window.history.pushState({ tab }, '', '#' + tab);
+      }
+
+      // add popstate handler once to handle back/forward navigation
+      if (!window.__tabPopstateAdded) {
+      window.addEventListener('popstate', (ev) => {
+        const stateTab = (ev.state && ev.state.tab) || location.hash.replace('#', '') || 'home';
+        // update nav active
+        document.querySelectorAll('.nav-item').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-tab') === stateTab);
+        });
+        // show/hide views
+        document.querySelectorAll('.tab-view').forEach(t => t.style.display = 'none');
+        const id = "tab-" + stateTab;
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'block';
+      });
+      window.__tabPopstateAdded = true;
+      }
+    });
+  });
+</script>
+  <!-- Scripts -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="script.js" defer></script>
+</body>
+</html>
