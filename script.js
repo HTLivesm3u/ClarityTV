@@ -143,6 +143,41 @@ document.addEventListener('DOMContentLoaded', () => {
     return details.media_url || details.url || details.audio || null;
   }
 
+
+// Add to your existing DOM refs
+const flipInner = document.getElementById('flip-inner');
+const showLyricsBtn = document.getElementById('show-lyrics-btn');
+const showCoverBtn = document.getElementById('show-cover-btn');
+
+// Flip functionality
+if (showLyricsBtn) {
+  showLyricsBtn.addEventListener('click', () => {
+    flipInner.classList.add('flipped');
+  });
+}
+
+if (showCoverBtn) {
+  showCoverBtn.addEventListener('click', () => {
+    flipInner.classList.remove('flipped');
+  });
+}
+
+// Update lyrics display function
+function renderSyncedLyrics(lrcText) {
+  const lyricsContainer = document.getElementById('lyrics-container');
+  if (!lyricsContainer) return;
+  
+  lyricsContainer.innerHTML = '';
+  
+  if (!lrcText) {
+    lyricsContainer.innerHTML = '<p>No lyrics available</p>';
+    return;
+  }
+  
+  // Your existing lyrics parsing logic...
+  // Add parsed lines to lyricsContainer with 'lyrics-line' class
+}
+  
   // Lyrics parsing state
   let parsedLyrics = [];
 
