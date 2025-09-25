@@ -120,9 +120,29 @@
 <div id="music-banner" class="music-banner" style="display:none;">
   <div class="player-container">
     <button id="close-banner-btn" class="close-btn"><i data-lucide="chevron-down"></i></button>
-    <div class="album-cover">
-      <img id="banner-cover-image" src="https://music45beta.vercel.app/music/music45.webp" alt="Album Cover">
+    <!-- Flip Container -->
+  <div class="flip-container">
+    <div class="flip-inner" id="flip-inner">
+      <!-- Front Side - Cover -->
+      <div class="flip-front">
+        <div class="album-cover">
+          <img id="banner-cover-image" src="https://music45beta.vercel.app/music/music45.webp" alt="Album Cover">
+        </div>
+        
+      </div>
+      
+      <!-- Back Side - Lyrics -->
+      <div class="flip-back">
+        <div class="lyrics-header">
+          <h3>Lyrics</h3>
+          <button class="flip-btn" id="show-cover-btn">
+            <i data-lucide="image"></i> Show Cover
+          </button>
+        </div>
+        <div class="lyrics-content" id="lyrics-container"></div>
+      </div>
     </div>
+  </div>
     <div class="song-info">
       <h2 id="banner-song-title">No song</h2>
       <p id="banner-artist-name">—</p>
@@ -150,6 +170,9 @@
       <div id="shuffle-popup" class="popup">Shuffle: <span id="shuffle-status">Off</span></div>
       <div id="repeat-popup" class="popup">Repeat: <span id="repeat-status">Off</span></div>
     </div>
+    <button class="flip-btn" id="show-lyrics-btn">
+          <i data-lucide="mic"></i> Show Lyrics
+        </button>
   </div>
 </div>
 
