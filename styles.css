@@ -208,7 +208,6 @@ body {
   color: var(--foreground-muted);
 }
 
-
 /* Sections */
 .section {
     display: flex;
@@ -572,10 +571,93 @@ body {
   color: var(--foreground-muted);
 }
 
-#lyrics-container p.active-line { color: var(--primary); font-weight: 600; }
-#lyrics-container { max-height: 40vh; overflow-y: auto; padding: 10px; color: var(--foreground-muted); text-align:center; }
+/* Flip Animation */
+.flip-container {
+  perspective: 1000px;
+  width: 100%;
+  height: 300px;
+  margin-bottom: 20px;
+}
 
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
 
+.flip-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-front, .flip-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.flip-back {
+  height: 130%;
+  transform: rotateY(180deg);
+  background: none;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+/* Lyrics Styling */
+.lyrics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.lyrics-content {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  text-align: center;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.lyrics-line {
+  margin: 8px 0;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.lyrics-line.active-line {
+  opacity: 2;
+  color: var(--primary);
+  font-weight: 600;
+  transform: scale(1.25);
+}
+
+.flip-btn {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: var(--foreground);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Song info positioning */
+.song-info {
+  margin-top: 20px;
+  text-align: center;
+}
 
 .progress-container {
   width: 100%;
@@ -633,11 +715,13 @@ body {
   }
 
   #banner-cover-image {
-    width: 90%;
-    max-width: 250px;
+    margin-top: 50%;
+    width: 100%;
+    max-width: 300px;
   }
 
   #banner-song-title {
+    margin-top: 70px;
     font-size: 1.25rem;
   }
 
@@ -777,9 +861,6 @@ body {
   background: var(--primary-hover, #444);
 }
 
-
-
-
 /* Search Bar */
 .search-container {
     display: flex;
@@ -821,7 +902,6 @@ body {
 .search-container button:hover {
     transform: scale(1.05);
 }
-
 
 .search-results {
     margin-top: 1rem;
