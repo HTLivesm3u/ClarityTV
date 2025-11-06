@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sleek Video Player</title>
+<style>
+  :root {
+    --bg:#0f1115; --panel:#171a21; --muted:#9aa3b2; --text:#e6ebf2;
+    --accent:#6ea8fe; --accent-2:#8be9fd; --track:#2a2f39; --track-fill:#6ea8fe;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:linear-gradient(180deg,#0b0e13, #0f1115); color:var(--text); font-family: system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;}
+  .wrap { max-width:1100px; margin:40px auto; padding:16px; }
+  .card {
+    background: radial-gradient(90% 120% at 10% 10%, #12161f 0%, #0f1115 60%);
+    border: 1px solid #1f2430; border-radius:16px; overflow:hidden; box-shadow: 0 10px 40px rgba(0,0,0,.35);
+  }
+  .stage { position:relative; background:#000; aspect-ratio:16/9; }
+  video { width:100%; height:100%; display:block; background:#000; }
+  .controls {
+    position:absolute; left:0; right:0; bottom:0; padding:10px 12px 12px;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.75) 100%);
+    opacity:1; transition: opacity .25s ease;
+  }
+  .stage.hide-ui .controls { opacity:0; pointer-events:none; }
+  .row { display:flex; align-items:center; gap:10px; }
+  .grow { flex:1; }
+
+  /* Buttons */
+  button, .select, input[type="range"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    gap:8px; min-width:36px; height:36px; border-radius:10px; border:1px solid #272c37;
+    background:linear-gradient(180deg,#161a22,#131721); color:var(--text);
+    padding:0 12px; font: 500 14px/1 system-ui, sans-serif; cursor:pointer;
+  }
+  .btn:hover { border-color:#374154; }
+  .btn:active { transform: translateY(1px); }
+  .icon { width:16px; height:16px; display:inline-block; }
+
+  /* Progress / Seek */
+  .time { font: 600 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--muted); min-width:72px; text-align:center; }
+  .bar-wrap { display:flex; align-items:center; gap:10px; }
+  .bar {
+    position:relative; height:10px; border-radius:999px; background:var(--track);
+    overflow:hidden; flex:1;
+  }
+  .bar input[type="range"] {
+    appearance:none; width:100%; height:10px; background:transparent; position:absolute; top:0; left:0; margin:0;
+  }
+  /* Range styling */
+  input[type="range"]::-webkit-slider-thumb { appearance:none; width:14px; height:14px; border-radius:50%; background:var(--text); border:2px solid #000; margin-top:-2px; }
+  input[type="range"]::-moz-range-thumb { width:14px; height:14px; border-radius:50%; background:var(--text); border:2px solid #000; }
+  input[type="range"]::-webkit-slider-runnable-track { height:10px; background:transparent; }
+  input[type="range"]::-moz-range-track { height:10px; background:transparent; }
+  .fill, .buffer {
+    position:absolute; left:0; top:0; height:100%;
+  }
+  .fill { background:linear-gradient(90deg,var(--track-fill), var(--accent-2)); width:0%; }
+  .buffer { background:#3a4354; width:0%; }
+
+  /* Volume slider */
+  .vol { width:110px; display:flex; align-items:center; gap:8px; }
+  .vol input { width:90px; }
+
+  /* Select (speed) */
+  .select { position:relative; }
+  select {
+    appearance:none; background:linear-gradient(180deg,#161a22,#131721);
+    border:1px solid #272c37; color:var(--text); padding:8px 30px 8px 10px; border-radius:10px; font:500 14px system-ui, sans-serif; cursor:pointer;
+  }
+  .select:after { content:"▾"; position:absolute; right:10px; top:50%; transform:translateY(-52%); pointer-events:none; color:var(--muted); }
+
+  /* Header */
+  .head { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid #1f2430; background:linear-gradient(180deg,#121722,#0f131b); }
+  .title { font-weight:700; letter-spacing:.2px; }
+  .meta { color:var(--muted); font-size:13px; }
+
+  /* Helper badges */
+  .badge { font:600 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:#b6c2d9; background:#1a2230; border:1px dashed #2b3342; padding:4px 8px; border-radius:999px; }
+
+  /* Mobile tweaks */
+  @media (max-width: 720px) {
+    .time { display:none; }
+    .vol { width:90px; }
+    .head { flex-direction:column; align-items:flex-start; gap:6px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="region" aria-label="Video player card">
+      <div class="head">
+        <div class="title">Big Buck Bunny (Demo)</div>
+        <div class="meta">Custom HTML5 Player · <span class="badge">Space</span> play/pause · <span class="badge">←/→</span> seek</div>
+      </div>
+
+      <div class="stage" id="stage">
+        <!-- Replace the src below with your own online URL -->
+        <video id="video"
+               preload="metadata"
+               crossorigin="anonymous"
+               poster="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg">
+          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+          <!-- Optional caption track example (replace with your VTT URL)
+          <track kind="subtitles" src="https://example.com/captions.vtt" srclang="en" label="English"> -->
+          Your browser does not support HTML5 video.
+        </video>
+
+        <!-- Controls -->
+        <div class="controls" id="controls" aria-label="Video controls">
+          <div class="row" style="margin-bottom:8px;">
+            <button class="btn" id="play" aria-label="Play/Pause" title="Play/Pause (Space)">
+              ▶︎
+            </button>
+
+            <button class="btn" id="back10" aria-label="Back 10 seconds" title="Back 10s (←)">⟲ 10s</button>
+            <button class="btn" id="fwd10" aria-label="Forward 10 seconds" title="Forward 10s (→)">10s ⟳</button>
+
+            <div class="vol" aria-label="Volume">
+              <button class="btn" id="mute" aria-label="Mute/Unmute" title="Mute (M)">🔊</button>
+              <input id="volume" type="range" min="0" max="1" step="0.01" value="1" aria-label="Volume slider">
+            </div>
+
+            <div class="select" title="Playback speed">
+              <select id="speed" aria-label="Playback speed">
+                <option value="0.5">0.5×</option>
+                <option value="0.75">0.75×</option>
+                <option value="1" selected>1×</option>
+                <option value="1.25">1.25×</option>
+                <option value="1.5">1.5×</option>
+                <option value="1.75">1.75×</option>
+                <option value="2">2×</option>
+              </select>
+            </div>
+
+            <button class="btn" id="pip" aria-label="Picture-in-Picture" title="Picture-in-Picture">PiP</button>
+            <button class="btn" id="fs" aria-label="Fullscreen" title="Fullscreen (F)">⤢</button>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="row bar-wrap">
+            <div class="time" id="cur">00:00</div>
+            <div class="bar" aria-label="Seek bar">
+              <div class="buffer" id="buffer"></div>
+              <div class="fill" id="fill"></div>
+              <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek slider">
+            </div>
+            <div class="time" id="dur">00:00</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:14px 16px; color:var(--muted); font-size:14px;">
+        Tip: Use <span class="badge">.</span>/<span class="badge">,</span> to speed up/down ·
+        <span class="badge">K</span> play/pause · <span class="badge">F</span> fullscreen · <span class="badge">I</span> PiP
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const video   = document.getElementById('video');
+  const playBtn = document.getElementById('play');
+  const back10  = document.getElementById('back10');
+  const fwd10   = document.getElementById('fwd10');
+  const muteBtn = document.getElementById('mute');
+  const vol     = document.getElementById('volume');
+  const speed   = document.getElementById('speed');
+  const pipBtn  = document.getElementById('pip');
+  const fsBtn   = document.getElementById('fs');
+
+  const seek    = document.getElementById('seek');
+  const fill    = document.getElementById('fill');
+  const buffer  = document.getElementById('buffer');
+  const cur     = document.getElementById('cur');
+  const dur     = document.getElementById('dur');
+  const stage   = document.getElementById('stage');
+
+  let hideTimer = null;
+
+  // Helpers
+  const fmt = s => {
+    if (!isFinite(s)) return "00:00";
+    const h = Math.floor(s/3600);
+    const m = Math.floor((s%3600)/60);
+    const sec = Math.floor(s%60);
+    return (h? String(h).padStart(2,'0')+':' : '') + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+  };
+
+  const updatePlayIcon = () => playBtn.textContent = video.paused ? '▶︎' : '⏸';
+  const updateMuteIcon = () => muteBtn.textContent = (video.muted || video.volume===0) ? '🔇' : '🔊';
+
+  // Play/pause
+  playBtn.addEventListener('click', ()=> video.paused ? video.play() : video.pause());
+  video.addEventListener('play', updatePlayIcon);
+  video.addEventListener('pause', updatePlayIcon);
+
+  // Seeking
+  function updateSeekUI(){
+    const fraction = video.duration ? (video.currentTime / video.duration) : 0;
+    seek.value = Math.round(fraction * 1000);
+    fill.style.width = `${fraction*100}%`;
+    cur.textContent = fmt(video.currentTime);
+    dur.textContent = fmt(video.duration || 0);
+  }
+  seek.addEventListener('input', e=>{
+    const fraction = +e.target.value / 1000;
+    video.currentTime = fraction * (video.duration || 0);
+  });
+  back10.addEventListener('click', ()=> video.currentTime = Math.max(0, video.currentTime - 10));
+  fwd10.addEventListener('click',  ()=> video.currentTime = Math.min(video.duration || 0, video.currentTime + 10));
+
+  // Buffer progress
+  function updateBuffer(){
+    try {
+      if (video.buffered.length){
+        const end = video.buffered.end(video.buffered.length-1);
+        const pct = video.duration ? (end / video.duration)*100 : 0;
+        buffer.style.width = pct + '%';
+      }
+    } catch(e){}
+  }
+
+  // Volume & mute
+  vol.addEventListener('input', e=>{
+    video.volume = +e.target.value;
+    if (video.volume > 0) video.muted = false;
+    updateMuteIcon();
+  });
+  muteBtn.addEventListener('click', ()=>{
+    video.muted = !video.muted;
+    updateMuteIcon();
+  });
+
+  // Speed
+  speed.addEventListener('change', e => video.playbackRate = +e.target.value);
+
+  // PiP
+  pipBtn.addEventListener('click', async ()=>{
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (document.pictureInPictureEnabled && !video.disablePictureInPicture) {
+        await video.requestPictureInPicture();
+      }
+    } catch(e){ console.warn(e); }
+  });
+
+  // Fullscreen
+  fsBtn.addEventListener('click', async ()=>{
+    const root = stage;
+    if (!document.fullscreenElement) {
+      await root.requestFullscreen?.();
+    } else {
+      await document.exitFullscreen?.();
+    }
+  });
+
+  // UI auto-hide when mouse inactive
+  function showUI(){ stage.classList.remove('hide-ui'); }
+  function hideUI(){ stage.classList.add('hide-ui'); }
+  const bump = () => {
+    showUI();
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(()=>{ if (!video.paused) hideUI(); }, 1600);
+  };
+  ['mousemove','touchstart','touchmove','keydown'].forEach(ev => stage.addEventListener(ev, bump));
+  video.addEventListener('play', bump);
+  video.addEventListener('pause', showUI);
+
+  // Keyboard shortcuts
+  window.addEventListener('keydown', e=>{
+    if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+    switch(e.key.toLowerCase()){
+      case 'k':
+      case ' ':
+        e.preventDefault();
+        video.paused ? video.play() : video.pause(); break;
+      case 'arrowleft': video.currentTime = Math.max(0, video.currentTime - 10); break;
+      case 'arrowright': video.currentTime = Math.min(video.duration || 0, video.currentTime + 10); break;
+      case 'm': video.muted = !video.muted; updateMuteIcon(); break;
+      case 'f': fsBtn.click(); break;
+      case 'i': pipBtn.click(); break;
+      case '.': video.playbackRate = Math.min(2, +(video.playbackRate + 0.25).toFixed(2)); speed.value = video.playbackRate; break;
+      case ',': video.playbackRate = Math.max(0.25, +(video.playbackRate - 0.25).toFixed(2)); speed.value = video.playbackRate; break;
+    }
+  });
+
+  // Time & buffer updates
+  video.addEventListener('timeupdate', updateSeekUI);
+  video.addEventListener('progress', updateBuffer);
+  video.addEventListener('loadedmetadata', ()=>{ updateSeekUI(); updateBuffer(); });
+  video.addEventListener('durationchange', updateSeekUI);
+
+  // Start in paused state but ready
+  updatePlayIcon(); updateMuteIcon(); updateSeekUI(); updateBuffer();
+})();
+</script>
+</body>
+</html>
