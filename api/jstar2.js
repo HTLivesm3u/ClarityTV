@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   }
 
   // Otherwise → treat as IPTV / player → return the M3U content directly
-  const m3uUrl = 'https://raw.githubusercontent.com/alex8875/m3u/main/jstar.m3u';
+  const m3uUrl = 'https://jtv.pfy.workers.dev';
 
   try {
     const response = await fetch(m3uUrl);
