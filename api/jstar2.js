@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   }
 
   // Otherwise → treat as IPTV / player → return the M3U content directly
-  const m3uUrl = 'https://jtv.pfy.workers.dev';
+  const m3uUrl = 'http://activefrance.net:80/live/12445677/0BC3C9C05265/1090636.ts';
 
   try {
     const response = await fetch(m3uUrl);
