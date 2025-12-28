@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   }
 
   // Otherwise → treat as IPTV / player → return the M3U content directly
-  const m3uUrl = 'https://jtv.pfy.workers.dev/';
+  const m3uUrl = 'https://jtvplus.streamflex.workers.dev/JTVPLUSONLY.m3u';
 
   try {
     const response = await fetch(m3uUrl);
