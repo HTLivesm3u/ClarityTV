@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
-  const accept = req.headers['accept'] %7C%7C '';
-  const secFetchDest = req.headers['sec-fetch-dest'] %7C%7C '';
-  const userAgent = req.headers['user-agent'] %7C%7C '';
+  const accept = req.headers['accept'] || '';
+  const secFetchDest = req.headers['sec-fetch-dest'] || '';
+  const userAgent = req.headers['user-agent'] || '';
 
   // Detect REAL browsers:
   //
@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   //   and often have Accept: */* or video/*.
   //
   const isBrowser =
-    (secFetchDest && secFetchDest !== 'empty') %7C%7C // browser navigation
+    (secFetchDest && secFetchDest !== 'empty') || // browser navigation
     accept.includes('text/html');
 
   if (isBrowser) {
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   }
 
   // Otherwise → treat as IPTV / player → return the M3U content directly
-  const m3uUrl = 'https://jtvplus.streamflex.workers.dev/JTVPLUSONLY.m3u';
+  const m3uUrl = 'https://raw.githubusercontent.com/alex8875/m3u/main/jstar.m3u';
 
   try {
     const response = await fetch(m3uUrl);
@@ -35,6 +35,18 @@ export default async function handler(req, res) {
       return;
     }
 
+    const body = await response.text();
+
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
+    res.setHeader('Content-Disposition', 'inline; filename="jstar.m3u"');
+    res.end(body);
+  } catch (error) {
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end('# Error: Internal server error while fetching playlist\n');
+  }
+}
     const body = await response.text();
 
     res.statusCode = 200;
