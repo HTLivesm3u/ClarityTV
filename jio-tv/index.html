@@ -50,7 +50,7 @@ header{
 <div class="grid" id="channels"></div>
 
 <script>
-const API = "https://raw.githubusercontent.com/alex8875/m3u/refs/heads/main/jtv.m3u";
+const API = "https://ztv.pfy.workers.dev/";
 
 fetch(API).then(r=>r.text()).then(text=>{
   const lines = text.split("\n");
